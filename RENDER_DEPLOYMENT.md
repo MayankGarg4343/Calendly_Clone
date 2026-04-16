@@ -1,6 +1,6 @@
 # Render Deployment Guide
 
-This guide will help you deploy the complete Calendly Clone project (frontend + backend) to Render.
+This guide will help you deploy the Calendly Clone project (frontend + backend) to Render separately.
 
 ## Prerequisites
 
@@ -18,38 +18,19 @@ This guide will help you deploy the complete Calendly Clone project (frontend + 
 
 Render provides a managed PostgreSQL database (free tier: 90 days, then $7/month):
 
-### Option 1: Use Render PostgreSQL (Recommended)
 1. Go to Render Dashboard → **"New +"** → **"PostgreSQL"**
 2. Configure:
    - Name: `calendly-clone-db`
    - Database: `calendly_clone`
-   - User: `postgres`
    - Region: Choose the closest to your users
 3. Click **"Create Database"**
 4. Wait for the database to be ready (1-2 minutes)
 5. Copy the **Internal Database URL** from the database dashboard
 
-### Option 2: Use External Database
-If you prefer to use Supabase, Neon, or Railway:
-1. Create your database following their setup guides
-2. Copy the connection string
-3. You'll add this manually later as an environment variable
-
 ## Step 3: Deploy Backend (Web Service)
-
-### Using render.yaml (Recommended)
-The project includes a `render.yaml` configuration file. When you push to GitHub and connect to Render, it will automatically deploy:
 
 1. Go to Render Dashboard → **"New +"** → **"Web Service"**
 2. Connect your GitHub repository: `MayankGarg4343/Calendly_Clone`
-3. Render will detect the `render.yaml` file
-4. Click **"Create Web Service"**
-
-### Manual Configuration (Alternative)
-If you prefer manual setup:
-
-1. Go to Render Dashboard → **"New +"** → **"Web Service"**
-2. Connect your GitHub repository
 3. Configure:
    - Name: `calendly-clone-backend`
    - Environment: `Node`
@@ -59,71 +40,50 @@ If you prefer manual setup:
 5. Add environment variables:
    - `NODE_ENV`: `production`
    - `PORT`: `5000`
-   - `DATABASE_URL`: Your database connection string
-   - `FRONTEND_URL`: Your frontend URL (add after frontend deployment)
+   - `DATABASE_URL`: Your database connection string (from Step 2)
+   - `JWT_SECRET`: Generate a random secret key
+   - `FRONTEND_URL`: Leave blank for now (will add after frontend deployment)
 6. Click **"Create Web Service"**
+7. Wait for deployment to complete
+8. Copy your backend URL (e.g., `https://calendly-clone-backend.onrender.com`)
 
 ## Step 4: Deploy Frontend (Static Site)
 
-### Using render.yaml (Recommended)
-The `render.yaml` file includes frontend configuration. It will be deployed automatically with the backend.
-
-### Manual Configuration (Alternative)
 1. Go to Render Dashboard → **"New +"** → **"Static Site"**
-2. Connect your GitHub repository
+2. Connect your GitHub repository: `MayankGarg4343/Calendly_Clone`
 3. Configure:
    - Name: `calendly-clone-frontend`
    - Build Command: `cd frontend && npm install && npm run build`
    - Publish Directory: `frontend/build`
 4. Click **"Advanced"** → **"Environment"**
 5. Add environment variable:
-   - `REACT_APP_API_URL`: Your backend URL (e.g., `https://calendly-clone-backend.onrender.com`)
+   - `REACT_APP_API_URL`: Your backend URL with `/api` suffix (e.g., `https://calendly-clone-backend.onrender.com/api`)
 6. Click **"Create Static Site"**
+7. Wait for deployment to complete
+8. Copy your frontend URL (e.g., `https://calendly-clone-frontend.onrender.com`)
 
-## Step 5: Update Frontend API URL
+## Step 5: Update Backend Environment Variable
 
-After deployment, update the frontend to use the deployed backend URL:
-
-1. Open `frontend/src/services/api.js`
-2. Update the API base URL:
-```javascript
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://calendly-clone-backend.onrender.com/api';
-```
-
-3. Push the changes to GitHub
-4. Render will automatically redeploy
+1. Go to your backend web service in Render
+2. Click **"Environment"**
+3. Add or update `FRONTEND_URL` with your frontend URL (from Step 4)
+4. Click **"Save Changes"**
+5. Render will automatically redeploy the backend
 
 ## Step 6: Run Database Migrations
 
-### Using Render Database
+### Using Render Console
 1. Go to your PostgreSQL database in Render
-2. Click **"Connect"** → **"External Connection"**
-3. Copy the connection string
-4. Use a database tool (DBeaver, pgAdmin, or psql) to connect
-5. Run the schema from `backend/database/schema.sql`
+2. Click **"Connect"** → **"Console"**
+3. Copy the contents of `backend/database/schema.sql`
+4. Paste it into the console and click **"Run"**
 
 ### Using psql CLI
 ```bash
 psql "postgresql://[user]:[password]@[host]:[port]/[database]" -f backend/database/schema.sql
 ```
 
-### Using Render Console
-1. Go to your PostgreSQL database in Render
-2. Click **"Connect"** → **"Console"**
-3. Paste the schema SQL and run it
-
-## Step 7: Update Environment Variables
-
-After both services are deployed:
-
-1. Go to your backend web service in Render
-2. Click **"Environment"**
-3. Update `FRONTEND_URL` with your frontend URL
-4. Go to your frontend static site in Render
-5. Click **"Environment"**
-6. Update `REACT_APP_API_URL` with your backend URL (append `/api`)
-
-## Step 8: Verify Deployment
+## Step 7: Verify Deployment
 
 1. Visit your frontend URL (e.g., `https://calendly-clone-frontend.onrender.com`)
 2. Test the frontend loads correctly
