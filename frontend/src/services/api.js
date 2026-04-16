@@ -9,6 +9,13 @@ const api = axios.create({
   },
 });
 
+// Add request interceptor to handle CORS
+api.interceptors.request.use((config) => {
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
 // Event Types API
 export const getEventTypes = async () => {
   const response = await api.get('/event-types');

@@ -1,0 +1,40 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: calendly-clone-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: calendly-clone-db
+          property: connectionString
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: calendly-clone-frontend
+          property: url
+
+  # Frontend Static Site
+  - type: site
+    name: calendly-clone-frontend
+    buildCommand: cd frontend && npm install && npm run build
+    publishPath: frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: calendly-clone-backend
+          property: url
+          property: url
+
+# PostgreSQL Database
+databases:
+  - name: calendly-clone-db
+    databaseName: calendly_clone
+    user: postgres
