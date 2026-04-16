@@ -17,10 +17,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: calendly-clone-frontend
-          property: url
+        value: https://calendly-clone-frontend.onrender.com
 
   # Frontend Static Site
   - type: web
@@ -36,4 +33,3 @@ services:
 databases:
   - name: calendly-clone-db
     databaseName: calendly_clone
-    user: postgres
